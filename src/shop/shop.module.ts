@@ -16,3 +16,4 @@ import { ShopItem } from './shop-item.entity';
   exports: [ShopService],
 })
 export class ShopModule {}
+// check
