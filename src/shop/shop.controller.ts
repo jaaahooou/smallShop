@@ -13,6 +13,7 @@ export class ShopController {
 
   @Get('/')
   getListOfProducts(): Promise<GetListOfProductsRespone> {
+    console.log('message e  dfe ');
     return this.shopService.getProducts();
   }
 
