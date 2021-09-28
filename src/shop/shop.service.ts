@@ -1,6 +1,10 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { GetListOfProductsRespone } from 'src/interfaces/shop';
+import { throwIfEmpty } from 'rxjs';
+import {
+  CreateProductResponse,
+  GetListOfProductsRespone,
+} from 'src/interfaces/shop';
 import { Repository } from 'typeorm';
 import { BasketService } from './../basket/basket.service';
 import { ShopItem } from './shop-item.entity';
@@ -25,6 +29,24 @@ export class ShopService {
 
   async getPriceOfPRoduct(name: string): Promise<number> {
     return (await this.getProducts()).find((item) => item.name === name).price;
+  }
+
+  async getOneProduct(id: string): Promise<ShopItem> {
+    return await this.shopItemRepository.findOneOrFail(id);
+  }
+
+  async removeProduct(id: string) {
+    return this.shopItemRepository.delete(id);
+  }
+
+  async createDummyProduct(): Promise<ShopItem> {
+    const newItem = new ShopItem();
+    newItem.price = 10;
+    newItem.name = 'kwiatki';
+    newItem.description = 'pachną bardzo ładnie';
+    await this.shopItemRepository.save(newItem);
+
+    return newItem;
   }
 }
 

@@ -1,6 +1,18 @@
-import { Controller, Get, Inject, Param, Redirect } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  Inject,
+  Param,
+  Post,
+  Redirect,
+} from '@nestjs/common';
 
-import { GetListOfProductsRespone } from 'src/interfaces/shop';
+import {
+  CreateProductResponse,
+  GetListOfProductsRespone,
+  GetOneProductResponse,
+} from 'src/interfaces/shop';
 import { ShopService } from './shop.service';
 
 @Controller('shop')
@@ -13,8 +25,22 @@ export class ShopController {
 
   @Get('/')
   getListOfProducts(): Promise<GetListOfProductsRespone> {
-    console.log('test');
     return this.shopService.getProducts();
+  }
+
+  @Get('/:id')
+  getOneProduct(@Param('id') id: string): Promise<GetOneProductResponse> {
+    return this.shopService.getOneProduct(id);
+  }
+
+  @Delete('/:id')
+  removeProduct(@Param('id') id: string) {
+    return this.shopService.removeProduct(id);
+  }
+
+  @Post('/')
+  createNewProduct(): Promise<CreateProductResponse> {
+    return this.shopService.createDummyProduct();
   }
 
   @Get('/test/:age')
