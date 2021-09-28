@@ -3,10 +3,7 @@ import { Controller, Get, Inject, Param, Redirect } from '@nestjs/common';
 import { GetListOfProductsRespone } from 'src/interfaces/shop';
 import { ShopService } from './shop.service';
 
-@Controller({
-  path: '/',
-  host: 'zzz.lvh.me',
-})
+@Controller('shop')
 export class ShopController {
   onApplicationBootstrap() {
     console.log('załadowane ');
@@ -15,7 +12,7 @@ export class ShopController {
   constructor(@Inject(ShopService) private shopService: ShopService) {}
 
   @Get('/')
-  getListOfProducts(): GetListOfProductsRespone {
+  getListOfProducts(): Promise<GetListOfProductsRespone> {
     return this.shopService.getProducts();
   }
 
