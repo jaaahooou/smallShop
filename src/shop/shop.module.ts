@@ -7,7 +7,7 @@ import { ShopItem } from './shop-item.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ShopItem]),
+    //TypeOrmModule.forFeature([ShopItem]),
     forwardRef(() => BasketModule),
   ],
 
