@@ -24,9 +24,8 @@ export class BasketService {
       typeof name !== 'string' ||
       typeof count !== 'number' ||
       name === '' ||
-      count < 1
-      // ||
-      // !this.ShopService.hasProduct(name)
+      count < 1 ||
+      !this.ShopService.hasProduct(name)
     ) {
       return {
         isSuccess: false,

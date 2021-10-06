@@ -1,11 +1,12 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { throwIfEmpty } from 'rxjs';
+import { max, throwIfEmpty } from 'rxjs';
 import {
   CreateProductResponse,
   GetListOfProductsRespone,
+  GetPaginatedListOfPRoductsResponse,
 } from 'src/interfaces/shop';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { BasketService } from './../basket/basket.service';
 import { ShopItem } from './shop-item.entity';
 
@@ -13,21 +14,35 @@ import { ShopItem } from './shop-item.entity';
 export class ShopService {
   constructor(
     @Inject(forwardRef(() => BasketService))
-    private basketService: BasketService,
-  ) // @InjectRepository(ShopItem)
-  // private shopItemRepository: Repository<ShopItem>,
-  {}
+    private basketService: BasketService, // @InjectRepository(ShopItem) // private shopItemRepository: Repository<ShopItem>,
+  ) {}
 
-  async getProducts(): Promise<GetListOfProductsRespone> {
-    return await ShopItem.find();
+  async getProducts(
+    currentPage: number = 1,
+  ): Promise<GetPaginatedListOfPRoductsResponse> {
+    const maxPerPage = 3;
+
+    const [items, count] = await ShopItem.findAndCount({
+      skip: maxPerPage * (currentPage - 1),
+      take: maxPerPage,
+    });
+
+    const pagesCount = Math.ceil(count / maxPerPage);
+    console.log({ count, pagesCount });
+
+    return {
+      items,
+      pagesCount,
+    };
   }
 
   async hasProduct(name: string): Promise<boolean> {
-    return (await this.getProducts()).some((item) => item.name === name);
+    return (await this.getProducts()).items.some((item) => item.name === name);
   }
 
   async getPriceOfPRoduct(name: string): Promise<number> {
-    return (await this.getProducts()).find((item) => item.name === name).price;
+    return (await this.getProducts()).items.find((item) => item.name === name)
+      .price;
   }
 
   async getOneProduct(id: string): Promise<ShopItem> {
@@ -57,18 +72,10 @@ export class ShopService {
     item.boughtCounter++;
     await item.save();
   }
-}
 
-// [
-//   { name: 'Golonka', description: ' Tłusta i smaczna', price: 3 },
-//   {
-//     name: 'Golonka2',
-//     description: ' Tłusta i pyszna',
-//     price: 4 - this.basketService.countPromo(),
-//   },
-//   {
-//     name: 'Golonka3',
-//     description: ' Tłusta i zdrowa',
-//     price: 5 - this.basketService.countPromo(),
-//   },
-// ];
+  async findProducts(searchTerm: string): Promise<GetListOfProductsRespone> {
+    return await ShopItem.find({
+      where: [{ description: Like(`%${searchTerm}%`) }],
+    });
+  }
+}

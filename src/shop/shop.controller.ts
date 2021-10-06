@@ -14,6 +14,8 @@ import {
   GetOneProductResponse,
 } from 'src/interfaces/shop';
 import { ShopService } from './shop.service';
+import { GetPaginatedListOfPRoductsResponse } from './../interfaces/shop';
+import { PrimaryGeneratedColumn } from 'typeorm';
 
 @Controller('shop')
 export class ShopController {
@@ -23,15 +25,24 @@ export class ShopController {
 
   constructor(@Inject(ShopService) private shopService: ShopService) {}
 
-  @Get('/')
-  getListOfProducts(): Promise<GetListOfProductsRespone> {
-    return this.shopService.getProducts();
+  @Get('/:pageNumber')
+  getListOfProducts(
+    @Param('pageNumber') pageNumber: string,
+  ): Promise<GetPaginatedListOfPRoductsResponse> {
+    return this.shopService.getProducts(Number(pageNumber));
   }
 
-  @Get('/:id')
-  getOneProduct(@Param('id') id: string): Promise<GetOneProductResponse> {
-    return this.shopService.getOneProduct(id);
+  @Get('/find/:searchTerm')
+  testFindItem(
+    @Param('searchTerm') searchTerm: string,
+  ): Promise<GetListOfProductsRespone> {
+    return this.shopService.findProducts(searchTerm);
   }
+
+  // @Get('/:id')
+  // getOneProduct(@Param('id') id: string): Promise<GetOneProductResponse> {
+  //   return this.shopService.getOneProduct(id);
+  // }
 
   @Delete('/:id')
   removeProduct(@Param('id') id: string) {
