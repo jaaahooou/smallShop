@@ -6,8 +6,9 @@ import {
   GetListOfProductsRespone,
   GetPaginatedListOfPRoductsResponse,
 } from 'src/interfaces/shop';
-import { Like, Repository } from 'typeorm';
+import { getConnection, Like, Repository } from 'typeorm';
 import { BasketService } from './../basket/basket.service';
+import { ShopItemDetails } from './shop-item-details.entity';
 import { ShopItem } from './shop-item.entity';
 
 @Injectable()
@@ -23,6 +24,8 @@ export class ShopService {
     const maxPerPage = 3;
 
     const [items, count] = await ShopItem.findAndCount({
+      relations: ['details', 'sets'],
+
       skip: maxPerPage * (currentPage - 1),
       take: maxPerPage,
     });
@@ -56,10 +59,17 @@ export class ShopService {
   async createDummyProduct(): Promise<ShopItem> {
     const newItem = new ShopItem();
     newItem.price = 10;
-    newItem.name = 'kwiatki';
-    newItem.description = 'pachną bardzo ładnie';
+    newItem.name = 'Nowe kwiatużki';
+    newItem.description = 'pachną bardzo smrodnie';
     await newItem.save();
 
+    const details = new ShopItemDetails();
+    details.color = 'green';
+    details.width = 20;
+    await details.save();
+
+    newItem.details = details;
+    await newItem.save();
     return newItem;
   }
 
@@ -74,8 +84,29 @@ export class ShopService {
   }
 
   async findProducts(searchTerm: string): Promise<GetListOfProductsRespone> {
-    return await ShopItem.find({
-      where: [{ description: Like(`%${searchTerm}%`) }],
-    });
+    const count = await getConnection()
+      .createQueryBuilder()
+      .select('COUNT(shopItem.id)', 'count')
+      .from(ShopItem, 'shopItem')
+      .getRawOne();
+
+    console.log(count);
+
+    return await getConnection()
+      .createQueryBuilder()
+      .select('shopItem')
+      .from(ShopItem, 'shopItem')
+      .where('shopItem.description LIKE :searchTerm', {
+        searchTerm: `%${searchTerm}%`,
+      })
+      .orderBy('shopItem.id', 'ASC')
+      .getMany();
+
+    //@TODO: skończyć
+
+    //   return await ShopItem.find({
+    //     where: [{ description: Like(`%${searchTerm}%`) }],
+    //   });
+    // }
   }
 }
